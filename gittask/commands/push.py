@@ -106,7 +106,8 @@ def push(
                         if repo_url.endswith(".git"):
                             repo_url = repo_url[:-4]
                     else:
-                        repo_url = "https://github.com/AndreasLF/gittask" # Fallback
+                        # No fallback, raise error
+                        raise typer.Exit(code=1)
                     
                     lines = [f"<body><h1>🚀 Pushed to <code>{target_branch}</code></h1><ul>"]
                     for c in commits:
