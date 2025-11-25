@@ -17,7 +17,7 @@ class AsanaClient:
         
         # Get current user
         # v5 returns a dict directly
-        self.me = self.users_api.get_user("me", opts={})['data']
+        self.me = self.users_api.get_user("me", opts={})
 
     def close(self):
         if hasattr(self.api_client, 'pool') and self.api_client.pool:
@@ -61,7 +61,7 @@ class AsanaClient:
             
         body = {"data": data}
         result = self.tasks_api.create_task(body, opts={})
-        return result['data']
+        return result
 
     def log_time_comment(self, task_gid: str, duration_seconds: float, branch_name: str):
         """
@@ -82,7 +82,7 @@ class AsanaClient:
         text = f"⏱️ Worked {' '.join(time_str)} on branch `{branch_name}`."
         
         body = {"data": {"text": text}}
-        self.stories_api.create_story_for_task(task_gid, body, opts={})
+        self.stories_api.create_story_for_task(body, task_gid, opts={})
 
     def get_workspaces(self) -> List[Dict]:
         result = self.workspaces_api.get_workspaces(opts={})
