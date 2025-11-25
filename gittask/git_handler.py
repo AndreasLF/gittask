@@ -27,3 +27,9 @@ class GitHandler:
 
     def get_repo_root(self) -> str:
         return self.repo.working_dir
+
+    def get_remote_url(self, remote_name: str = "origin") -> Optional[str]:
+        try:
+            return self.repo.remote(remote_name).url
+        except ValueError:
+            return None

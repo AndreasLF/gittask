@@ -33,19 +33,11 @@ def commit(
         # Git commit failed (e.g., nothing to commit)
         raise typer.Exit(code=1)
         
-    # 2. Post to Asana if linked
-    if task_info:
-        token = config.get_api_token()
-        if not token:
-            console.print("[yellow]Not authenticated with Asana. Skipping comment.[/yellow]")
-            return
-
-        try:
-            with AsanaClient(token) as client:
-                comment_text = f"💻 **Commit on `{current_branch}`**\n\n{message}"
-                client.post_comment(task_info['asana_task_gid'], comment_text)
-                console.print(f"[green]Posted commit message to Asana task: {task_info['asana_task_name']}[/green]")
-        except Exception as e:
-            console.print(f"[red]Failed to post comment to Asana: {e}[/red]")
-    else:
-        console.print("[yellow]Branch not linked to Asana task. Skipping comment.[/yellow]")
+    try:
+        subprocess.run(cmd, check=True)
+        console.print("[green]Commit successful.[/green]")
+    except subprocess.CalledProcessError:
+        # Git commit failed (e.g., nothing to commit)
+        raise typer.Exit(code=1)
+        
+    # Asana posting moved to 'push' command
