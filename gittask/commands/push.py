@@ -33,27 +33,35 @@ def push(
         has_upstream = False
         
     commits = []
+    
+    # Determine range to log
+    range_str = ""
     if has_upstream:
-        # Get log of commits that are in HEAD but not in upstream
-        try:
-            log_output = subprocess.check_output(
-                ["git", "log", f"{upstream}..HEAD", "--pretty=format:%h|%s"],
-                text=True
-            ).strip()
-            
-            if log_output:
-                for line in log_output.split('\n'):
-                    parts = line.split('|', 1)
-                    if len(parts) == 2:
-                        commits.append({"hash": parts[0], "message": parts[1]})
-        except subprocess.CalledProcessError:
-            console.print("[yellow]Could not determine unpushed commits.[/yellow]")
+        range_str = f"{upstream}..HEAD"
     else:
-        # If no upstream, all commits on this branch are "new" to the remote (conceptually)
-        # But for simplicity, maybe we just push and don't try to list everything?
-        # Or we list everything from main?
-        # Let's try to list everything from main..HEAD if possible, or just skip.
-        console.print("[yellow]First push for this branch. Skipping commit summary.[/yellow]")
+        # If no upstream, compare against origin/main (assuming main is the base)
+        # Or just list all commits if we can't determine base?
+        # A safe bet is usually to compare against the default branch if it exists locally
+        # But let's try to be smart. If we are on a feature branch, we likely branched off main.
+        # So we want commits that are reachable from HEAD but not from origin/main.
+        range_str = "origin/main..HEAD"
+
+    try:
+        log_output = subprocess.check_output(
+            ["git", "log", range_str, "--pretty=format:%h|%s"],
+            text=True,
+            stderr=subprocess.DEVNULL # Suppress error if range is invalid
+        ).strip()
+        
+        if log_output:
+            for line in log_output.split('\n'):
+                parts = line.split('|', 1)
+                if len(parts) == 2:
+                    commits.append({"hash": parts[0], "message": parts[1]})
+    except subprocess.CalledProcessError:
+        # Fallback: if range is invalid (e.g. origin/main doesn't exist), maybe just show last commit?
+        # Or just skip summary.
+        console.print("[yellow]Could not determine new commits. Skipping summary.[/yellow]")
 
     # 2. Push
     console.print(f"Pushing to {remote}/{target_branch}...")
