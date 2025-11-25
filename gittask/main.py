@@ -1,4 +1,4 @@
-from .commands import auth, init, checkout, status, sync
+from .commands import auth, init, checkout, status, sync, commit
 import typer
 
 app = typer.Typer(
@@ -12,6 +12,7 @@ app.command(name="init", help="Configuration commands")(init.init)
 app.command(name="checkout", help="Checkout branch and track time")(checkout.checkout)
 app.command(name="status", help="Show status")(status.status)
 app.command(name="sync", help="Sync time to Asana")(sync.sync)
+app.command(name="commit")(commit.commit)
 
 @app.callback()
 def main(ctx: typer.Context):

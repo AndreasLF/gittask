@@ -80,7 +80,12 @@ class AsanaClient:
             time_str.append("< 1m")
             
         text = f"⏱️ Worked {' '.join(time_str)} on branch `{branch_name}`."
-        
+        self.post_comment(task_gid, text)
+
+    def post_comment(self, task_gid: str, text: str):
+        """
+        Post a comment to a task.
+        """
         body = {"data": {"text": text}}
         self.stories_api.create_story_for_task(body, task_gid, opts={})
 
