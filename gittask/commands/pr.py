@@ -4,6 +4,7 @@ from rich.table import Table
 from ..config import ConfigManager
 from ..database import DBManager
 from ..git_handler import GitHandler
+from ..asana_client import AsanaClient
 from github import Github
 import subprocess
 
@@ -99,6 +100,19 @@ def create(
         )
         console.print(f"[green]PR Created Successfully![/green]")
         console.print(f"URL: {pr.html_url}")
+        
+        # Post to Asana
+        if task_info:
+            token = config.get_api_token()
+            if token:
+                try:
+                    with AsanaClient(token) as client:
+                        comment_text = f"🔗 **Pull Request Created**\n\n<a href=\"{pr.html_url}\">{pr.title} (#{pr.number})</a>"
+                        client.post_comment(task_info['asana_task_gid'], comment_text)
+                        console.print(f"[green]Posted PR link to Asana task: {task_info['asana_task_name']}[/green]")
+                except Exception as e:
+                    console.print(f"[red]Failed to post PR link to Asana: {e}[/red]")
+                    
     except Exception as e:
         console.print(f"[red]Failed to create PR: {e}[/red]")
 
