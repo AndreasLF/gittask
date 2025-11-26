@@ -29,7 +29,7 @@ def finish():
 
     # 1. Stop Timer
     console.print("⏱️  Stopping timer...")
-    session = db.stop_current_session()
+    session = db.stop_current_session(current_branch)
     if session:
         console.print(f"[green]Stopped session ({int(session['duration_seconds'] // 60)}m).[/green]")
     else:
