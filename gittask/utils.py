@@ -59,13 +59,11 @@ def select_and_create_tags(client, workspace_gid: str, db) -> List[str]:
             console.print(f"[cyan]Tag '{tag_input}' not found. Creating new tag...[/cyan]")
             
             # Color selection
-            color_choices = [
-                "none", "dark-pink", "dark-green", "dark-blue", "dark-red", 
-                "dark-teal", "dark-brown", "dark-orange", "dark-purple", 
-                "dark-warm-gray", "light-pink", "light-green", "light-blue", 
-                "light-red", "light-teal", "light-brown", "light-orange", 
-                "light-purple", "light-warm-gray"
-            ]
+            color_choices = ["dark-blue", "dark-brown", "dark-green", 
+                "dark-orange", "dark-pink", "dark-purple", "dark-red", 
+                "dark-teal", "dark-warm-gray", "light-blue", "light-green", 
+                "light-orange", "light-pink", "light-purple", "light-red", 
+                "light-teal", "light-warm-gray", "light-yellow", "none"]
             tag_color = questionary.autocomplete(
                 "Tag Color:",
                 choices=color_choices,
