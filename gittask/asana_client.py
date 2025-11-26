@@ -133,3 +133,15 @@ class AsanaClient:
         """
         body = {"data": {"tag": tag_gid}}
         self.tasks_api.add_tag_for_task(body, task_gid)
+
+    def get_project_tasks(self, project_gid: str) -> List[Dict]:
+        """
+        Get all open tasks in a project.
+        """
+        opts = {
+            'project': project_gid,
+            'completed_since': 'now',  # Only incomplete tasks
+            'opt_fields': 'name,gid,completed'
+        }
+        result = self.tasks_api.get_tasks(opts=opts)
+        return list(result)

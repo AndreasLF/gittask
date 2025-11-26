@@ -60,38 +60,66 @@ def checkout(
              console.print("[red]No default workspace set. Run 'gittask init'.[/red]")
              return
 
+
         with AsanaClient(token) as client:
-            action = questionary.select(
-                "What would you like to do?",
-                choices=[
-                    "Search for an existing task",
-                    "Create a new task",
-                    "Don't link (No tracking)"
-                ]
+            project_gid = config.get_default_project()
+            
+            # Fetch project tasks for autocomplete
+            console.print("Fetching project tasks...")
+            try:
+                project_tasks = client.get_project_tasks(project_gid)
+            except Exception as e:
+                console.print(f"[red]Failed to fetch project tasks: {e}[/red]")
+                project_tasks = []
+            
+            task_names = [t['name'] for t in project_tasks]
+            from prompt_toolkit.completion import WordCompleter
+            completer = WordCompleter(task_names, ignore_case=True, match_middle=True)
+            
+            task_input = questionary.text(
+                "Select task (Type to search or enter new name):",
+                completer=completer
             ).ask()
             
-            task_gid = None
-            task_name = None
+            if not task_input:
+                console.print("[yellow]No task selected. Tracking disabled.[/yellow]")
+                return
+
+            # Check if task exists
+            existing_task = next((t for t in project_tasks if t['name'].lower() == task_input.lower()), None)
             
-
-
-            if action == "Search for an existing task":
-                query = questionary.text("Search query:").ask()
-                tasks = client.search_tasks(workspace_gid, query)
+            if existing_task:
+                task_gid = existing_task['gid']
+                task_name = existing_task['name']
+                console.print(f"[green]Selected existing task: {task_name}[/green]")
                 
-                if not tasks:
-                    console.print("[yellow]No tasks found.[/yellow]")
-                else:
-                    task_choices = [
-                        questionary.Choice(t['name'], value=t) for t in tasks
-                    ]
-                    selected_task = questionary.select("Select task:", choices=task_choices).ask()
-                    task_gid = selected_task['gid']
-                    task_name = selected_task['name']
+                # Optional: Add tags to existing task
+                if questionary.confirm("Add tags to this task?").ask():
+                    tag_gids = select_and_create_tags(client, workspace_gid, db)
+                    if tag_gids:
+                        console.print(f"Applying {len(tag_gids)} tags...")
+                        for tag_gid in tag_gids:
+                            try:
+                                client.add_tag_to_task(task_gid, tag_gid)
+                            except Exception as e:
+                                console.print(f"[red]Failed to add tag: {e}[/red]")
+
+            else:
+                # Create new task
+                if questionary.confirm(f"Create new task '{task_input}'?").ask():
+                    task_name = task_input
                     
-                    # Optional: Add tags to existing task
-                    if questionary.confirm("Add tags to this task?").ask():
-                        tag_gids = select_and_create_tags(client, workspace_gid, db)
+                    # Tag Selection
+                    tag_gids = select_and_create_tags(client, workspace_gid, db)
+
+                    # Create Task
+                    try:
+                        new_task = client.create_task(workspace_gid, project_gid, task_name)
+                        task_gid = new_task['gid']
+                        task_name = new_task['name']
+                        console.print(f"[green]Created task: {task_name}[/green]")
+                        
+                        # Apply Tags
                         if tag_gids:
                             console.print(f"Applying {len(tag_gids)} tags...")
                             for tag_gid in tag_gids:
@@ -99,28 +127,12 @@ def checkout(
                                     client.add_tag_to_task(task_gid, tag_gid)
                                 except Exception as e:
                                     console.print(f"[red]Failed to add tag: {e}[/red]")
-                    
-            elif action == "Create a new task":
-                task_name = questionary.text("Task Name:", default=branch_name).ask()
-                project_gid = config.get_default_project()
-                
-                # Tag Selection
-                tag_gids = select_and_create_tags(client, workspace_gid, db)
-
-                # Create Task
-                new_task = client.create_task(workspace_gid, project_gid, task_name)
-                task_gid = new_task['gid']
-                task_name = new_task['name']
-                console.print(f"[green]Created task: {task_name}[/green]")
-                
-                # Apply Tags
-                if tag_gids:
-                    console.print(f"Applying {len(tag_gids)} tags...")
-                    for tag_gid in tag_gids:
-                        try:
-                            client.add_tag_to_task(task_gid, tag_gid)
-                        except Exception as e:
-                            console.print(f"[red]Failed to add tag: {e}[/red]")
+                    except Exception as e:
+                         console.print(f"[red]Failed to create task: {e}[/red]")
+                         return
+                else:
+                    console.print("[yellow]Task creation cancelled. Tracking disabled.[/yellow]")
+                    return
 
         if task_gid:
             # Link it
