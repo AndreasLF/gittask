@@ -87,6 +87,10 @@ class AsanaClient:
         """
         Post a comment to a task.
         """
+        # append signature to body 
+        signature = "\n\n<em>🤖 created with gittask cli tool</em>"
+        text += signature
+        
         if not text.startswith("<body>"):
             text = f"<body>{text}</body>"
             
