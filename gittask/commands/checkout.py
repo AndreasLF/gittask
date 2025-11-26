@@ -98,6 +98,14 @@ def checkout(
                 task_name = existing_task['name']
                 console.print(f"[green]Selected existing task: {task_name}[/green]")
                 
+                # Assign to self
+                try:
+                    user_gid = client.get_user_gid()
+                    client.assign_task(task_gid, user_gid)
+                    console.print(f"[green]Assigned task to you.[/green]")
+                except Exception as e:
+                    console.print(f"[red]Failed to assign task: {e}[/red]")
+                
                 # Optional: Add tags to existing task
                 if questionary.confirm("Add tags to this task?").ask():
                     tag_gids = select_and_create_tags(client, workspace_gid, db)

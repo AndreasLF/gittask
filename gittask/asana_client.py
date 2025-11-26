@@ -145,3 +145,10 @@ class AsanaClient:
         }
         result = self.tasks_api.get_tasks(opts=opts)
         return list(result)
+
+    def assign_task(self, task_gid: str, assignee_gid: str):
+        """
+        Assign a task to a user.
+        """
+        body = {"data": {"assignee": assignee_gid}}
+        self.tasks_api.update_task(body, task_gid, opts={})
