@@ -44,6 +44,11 @@ def checkout(
     task_info = db.get_task_for_branch(branch_name)
     
     if not task_info:
+        # Skip linking for main/master
+        if branch_name in ["main", "master"]:
+             console.print(f"[yellow]Branch '{branch_name}' is skipped for Asana linking.[/yellow]")
+             return
+
         # Not linked, prompt to link
         console.print(f"[bold blue]Branch '{branch_name}' is not linked to an Asana task.[/bold blue]")
         
