@@ -35,6 +35,26 @@ def finish():
     else:
         console.print("No active session.")
 
+    # 1.5 Sync Time
+    console.print("🔄 Syncing time to Asana...")
+    token = config.get_api_token()
+    if token:
+        try:
+            with AsanaClient(token) as client:
+                unsynced = db.get_unsynced_sessions()
+                # Filter for current branch
+                sessions_to_sync = [s for s in unsynced if s['end_time'] is not None and s['branch'] == current_branch]
+                
+                if sessions_to_sync:
+                    for session in sessions_to_sync:
+                        client.log_time_comment(session['task_gid'], session['duration_seconds'], session['branch'])
+                        db.mark_session_synced(session['id'])
+                    console.print(f"[green]Synced {len(sessions_to_sync)} sessions.[/green]")
+                else:
+                    console.print("No time to sync for this branch.")
+        except Exception as e:
+             console.print(f"[red]Failed to sync time: {e}[/red]")
+
     # 2. Check & Merge PR
     console.print("🔍 Checking for open Pull Requests...")
     try:
