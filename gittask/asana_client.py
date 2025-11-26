@@ -86,11 +86,41 @@ class AsanaClient:
     def post_comment(self, task_gid: str, text: str):
         """
         Post a comment to a task.
+        Converts basic markdown to HTML and appends signature.
         """
-        if not text.startswith("<body>"):
-            text = f"<body>{text}</body>"
+        import re
+        
+        html_text = text
+        
+        # If it's not already HTML (rudimentary check), convert markdown
+        if not text.strip().startswith("<body>"):
+            # Newlines
+            html_text = html_text.replace("\n", "<br/>")
             
-        body = {"data": {"html_text": text}}
+            # Bold **text** -> <b>text</b>
+            html_text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', html_text)
+            
+            # Italic *text* -> <i>text</i>
+            html_text = re.sub(r'\*(.*?)\*', r'<i>\1</i>', html_text)
+            
+            # Code `text` -> <code>text</code>
+            html_text = re.sub(r'`(.*?)`', r'<code>\1</code>', html_text)
+            
+            # Links [text](url) -> <a href="url">text</a>
+            html_text = re.sub(r'\[(.*?)\]\((.*?)\)', r'<a href="\2">\1</a>', html_text)
+
+        # Append Signature
+        signature = "<br/><br/><small><i>🤖 created with gittask cli tool</i></small>"
+        if signature not in html_text:
+            if html_text.endswith("</body>"):
+                html_text = html_text[:-7] + signature + "</body>"
+            else:
+                html_text += signature
+            
+        if not html_text.startswith("<body>"):
+            html_text = f"<body>{html_text}</body>"
+            
+        body = {"data": {"html_text": html_text}}
         self.stories_api.create_story_for_task(body, task_gid, opts={})
 
     def complete_task(self, task_gid: str):
