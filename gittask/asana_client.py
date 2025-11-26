@@ -90,10 +90,10 @@ class AsanaClient:
         """
         import re
         
-        html_text = text
+        html_text = text.strip()
         
         # If it's not already HTML (rudimentary check), convert markdown
-        if not text.strip().startswith("<body>"):
+        if not html_text.startswith("<body>"):
             # Newlines
             html_text = html_text.replace("\n", "<br/>")
             
@@ -114,31 +114,14 @@ class AsanaClient:
         # We use <em> for a subtle look.
         signature = "\n\n<em>🤖 created with gittask cli tool</em>"
         
-        # We need to handle newlines for the signature if we are appending to HTML that might not have breaks
-        # But wait, if we are appending to HTML, we should use <br> if it's inside body?
-        # The text input might be HTML (from push) or Markdown (from pr).
-        
-        # If it starts with body, it's likely HTML from push.py
-        if text.strip().startswith("<body>"):
-             # push.py generates <body>...</body>
-             # We need to insert before </body>
-             pass
-        
-        # Let's standardize.
-        
         if signature not in html_text:
             if html_text.endswith("</body>"):
                 # It's HTML. Use <br>
-                # Note: push.py uses <ul><li>...</li></ul></body>
-                # We want to add it after the list? Or just at the end.
-                # Let's add it at the end of body.
-                # We need <br> because it's HTML.
                 sig_html = "<br/><br/><em>🤖 created with gittask cli tool</em>"
-                html_text = html_text[:-7] + sig_html + "</body>"
+                # Use replace to be safe against slicing errors if logic changes
+                html_text = html_text.replace("</body>", sig_html + "</body>")
             else:
                 # It's plain text / markdown converted above.
-                # We already replaced \n with <br/> above if it wasn't body.
-                # So we should use <br/> here too.
                 html_text += "<br/><br/><em>🤖 created with gittask cli tool</em>"
             
         if not html_text.startswith("<body>"):
