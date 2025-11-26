@@ -114,7 +114,18 @@ def create(
                     console.print(f"[red]Failed to post PR link to Asana: {e}[/red]")
                     
     except Exception as e:
-        console.print(f"[red]Failed to create PR: {e}[/red]")
+        # Check if PR already exists
+        if "A pull request already exists" in str(e):
+            console.print("[yellow]A pull request already exists for this branch.[/yellow]")
+            # Try to find the existing PR
+            pulls = repo.get_pulls(head=f"{repo.owner.login}:{current_branch}")
+            if pulls.totalCount > 0:
+                pr = pulls[0]
+                console.print(f"URL: {pr.html_url}")
+            else:
+                console.print(f"[red]Could not find existing PR URL.[/red]")
+        else:
+            console.print(f"[red]Failed to create PR: {e}[/red]")
 
 @app.command(name="list")
 def list_prs():
