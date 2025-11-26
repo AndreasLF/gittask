@@ -56,6 +56,12 @@ class DBManager:
                     'end_time': end_time,
                     'duration_seconds': duration
                 }, doc_ids=[session.doc_id])
+                
+                # Return the updated session data
+                session['end_time'] = end_time
+                session['duration_seconds'] = duration
+                return session
+        return None
 
     def get_unsynced_sessions(self) -> List[Dict]:
         Session = Query()

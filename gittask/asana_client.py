@@ -92,6 +92,13 @@ class AsanaClient:
         body = {"data": {"html_text": text}}
         self.stories_api.create_story_for_task(body, task_gid, opts={})
 
+    def complete_task(self, task_gid: str):
+        """
+        Mark a task as completed.
+        """
+        body = {"data": {"completed": True}}
+        self.tasks_api.update_task(body, task_gid, opts={})
+
     def get_workspaces(self) -> List[Dict]:
         result = self.workspaces_api.get_workspaces(opts={})
         return list(result)

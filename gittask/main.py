@@ -1,5 +1,5 @@
-from .commands import auth, init, checkout, status, sync, commit, push, pr
 import typer
+from .commands import auth, init, checkout, status, sync, commit, push, pr, finish
 
 app = typer.Typer(
     name="gittask",
@@ -15,6 +15,7 @@ app.command(name="sync", help="Sync time to Asana")(sync.sync)
 app.command(name="commit")(commit.commit)
 app.command(name="push")(push.push)
 app.add_typer(pr.app, name="pr", help="Pull Request commands")
+app.command(name="finish")(finish.finish)
 
 @app.callback()
 def main(ctx: typer.Context):
