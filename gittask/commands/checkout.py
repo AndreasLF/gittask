@@ -6,6 +6,7 @@ from ..asana_client import AsanaClient
 import questionary
 import time
 from rich.console import Console
+from ..utils import select_and_create_tags
 
 console = Console()
 
@@ -72,46 +73,7 @@ def checkout(
             task_gid = None
             task_name = None
             
-            # Helper for tag selection
-            def select_and_create_tags(client, workspace_gid, db):
-                console.print("Fetching tags...")
-                cached_tags = db.get_cached_tags()
-                if not cached_tags:
-                    try:
-                        cached_tags = client.get_tags(workspace_gid)
-                        db.cache_tags(cached_tags)
-                    except Exception as e:
-                        console.print(f"[red]Failed to fetch tags: {e}[/red]")
-                        cached_tags = []
-                
-                tag_choices = [t['name'] for t in cached_tags]
-                tag_choices.append("Create new tag")
-                
-                selected_tag_names = questionary.checkbox(
-                    "Select tags:",
-                    choices=tag_choices
-                ).ask()
-                
-                selected_tag_gids = []
-                if selected_tag_names:
-                    for tag_name in selected_tag_names:
-                        if tag_name == "Create new tag":
-                            new_tag_name = questionary.text("New Tag Name:").ask()
-                            if new_tag_name:
-                                try:
-                                    new_tag = client.create_tag(workspace_gid, new_tag_name)
-                                    selected_tag_gids.append(new_tag['gid'])
-                                    # Update cache
-                                    cached_tags.append({'gid': new_tag['gid'], 'name': new_tag['name']})
-                                    db.cache_tags(cached_tags)
-                                except Exception as e:
-                                    console.print(f"[red]Failed to create tag '{new_tag_name}': {e}[/red]")
-                        else:
-                            # Find gid
-                            tag = next((t for t in cached_tags if t['name'] == tag_name), None)
-                            if tag:
-                                selected_tag_gids.append(tag['gid'])
-                return selected_tag_gids
+
 
             if action == "Search for an existing task":
                 query = questionary.text("Search query:").ask()

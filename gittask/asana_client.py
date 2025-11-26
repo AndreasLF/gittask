@@ -115,11 +115,15 @@ class AsanaClient:
         result = self.tags_api.get_tags_for_workspace(workspace_gid, opts={'opt_fields': 'name,gid'})
         return list(result)
 
-    def create_tag(self, workspace_gid: str, name: str) -> Dict:
+    def create_tag(self, workspace_gid: str, name: str, color: Optional[str] = None) -> Dict:
         """
         Create a new tag.
         """
-        body = {"data": {"workspace": workspace_gid, "name": name}}
+        data = {"workspace": workspace_gid, "name": name}
+        if color:
+            data["color"] = color
+            
+        body = {"data": data}
         result = self.tags_api.create_tag(body, opts={})
         return result
 
@@ -128,4 +132,4 @@ class AsanaClient:
         Add a tag to a task.
         """
         body = {"data": {"tag": tag_gid}}
-        self.tasks_api.add_tag_for_task(body, task_gid, opts={})
+        self.tasks_api.add_tag_for_task(body, task_gid)
