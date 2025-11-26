@@ -11,12 +11,29 @@ KEYRING_USERNAME = "user" # Simple single user for now
 class ConfigManager:
     def __init__(self):
         self.db = DBManager()
-
-    def set_api_token(self, token: str):
-        keyring.set_password(KEYRING_SERVICE, KEYRING_USERNAME, token)
+        self.SERVICE_NAME = KEYRING_SERVICE
 
     def get_api_token(self) -> Optional[str]:
-        return keyring.get_password(KEYRING_SERVICE, KEYRING_USERNAME)
+        return keyring.get_password(self.SERVICE_NAME, "api_token")
+
+    def set_api_token(self, token: str):
+        keyring.set_password(self.SERVICE_NAME, "api_token", token)
+
+    def get_github_token(self) -> Optional[str]:
+        return keyring.get_password(self.SERVICE_NAME, "github_token")
+
+    def set_github_token(self, token: str):
+        keyring.set_password(self.SERVICE_NAME, "github_token", token)
+
+    def logout(self):
+        try:
+            keyring.delete_password(self.SERVICE_NAME, "api_token")
+        except keyring.errors.PasswordDeleteError:
+            pass
+        try:
+            keyring.delete_password(self.SERVICE_NAME, "github_token")
+        except keyring.errors.PasswordDeleteError:
+            pass
 
     def set_default_workspace(self, workspace_gid: str):
         self.db.config.upsert({'key': 'default_workspace', 'value': workspace_gid}, Query().key == 'default_workspace')

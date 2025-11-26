@@ -13,6 +13,7 @@ dependencies = [
     "keyring>=24.0.0",
     "python-dateutil>=2.8.2",
     "thefuzz>=0.20.0",
+    "PyGithub",
 ]
 
 [project.scripts]
