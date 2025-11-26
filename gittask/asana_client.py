@@ -13,6 +13,7 @@ class AsanaClient:
         self.stories_api = asana.StoriesApi(self.api_client)
         self.workspaces_api = asana.WorkspacesApi(self.api_client)
         self.projects_api = asana.ProjectsApi(self.api_client)
+        self.tags_api = asana.TagsApi(self.api_client)
         self.typeahead_api = asana.TypeaheadApi(self.api_client)
         
         # Get current user
@@ -106,3 +107,25 @@ class AsanaClient:
     def get_projects(self, workspace_gid: str) -> List[Dict]:
         result = self.projects_api.get_projects_for_workspace(workspace_gid, opts={})
         return list(result)
+
+    def get_tags(self, workspace_gid: str) -> List[Dict]:
+        """
+        Get all tags in the workspace.
+        """
+        result = self.tags_api.get_tags_for_workspace(workspace_gid, opts={'opt_fields': 'name,gid'})
+        return list(result)
+
+    def create_tag(self, workspace_gid: str, name: str) -> Dict:
+        """
+        Create a new tag.
+        """
+        body = {"data": {"workspace": workspace_gid, "name": name}}
+        result = self.tags_api.create_tag(body, opts={})
+        return result
+
+    def add_tag_to_task(self, task_gid: str, tag_gid: str):
+        """
+        Add a tag to a task.
+        """
+        body = {"data": {"tag": tag_gid}}
+        self.tasks_api.add_tag_for_task(body, task_gid, opts={})

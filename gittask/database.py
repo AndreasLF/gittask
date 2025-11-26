@@ -10,6 +10,20 @@ class DBManager:
         self.branch_map = self.db.table('branch_map')
         self.time_sessions = self.db.table('time_sessions')
         self.config = self.db.table('config')
+        self.tags = self.db.table('tags')
+
+    # Tag Operations
+    def cache_tags(self, tags: List[Dict]):
+        """
+        Cache a list of tags. Each tag should have 'gid' and 'name'.
+        """
+        # Clear existing cache or upsert? Upsert is better but clearing might be safer for sync.
+        # Let's truncate and replace for simplicity to handle deletions/renames on Asana side.
+        self.tags.truncate()
+        self.tags.insert_multiple(tags)
+
+    def get_cached_tags(self) -> List[Dict]:
+        return self.tags.all()
 
     # Branch Map Operations
     def get_task_for_branch(self, branch_name: str) -> Optional[Dict]:

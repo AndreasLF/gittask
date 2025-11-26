@@ -72,13 +72,53 @@ def checkout(
             task_gid = None
             task_name = None
             
+            # Helper for tag selection
+            def select_and_create_tags(client, workspace_gid, db):
+                console.print("Fetching tags...")
+                cached_tags = db.get_cached_tags()
+                if not cached_tags:
+                    try:
+                        cached_tags = client.get_tags(workspace_gid)
+                        db.cache_tags(cached_tags)
+                    except Exception as e:
+                        console.print(f"[red]Failed to fetch tags: {e}[/red]")
+                        cached_tags = []
+                
+                tag_choices = [t['name'] for t in cached_tags]
+                tag_choices.append("Create new tag")
+                
+                selected_tag_names = questionary.checkbox(
+                    "Select tags:",
+                    choices=tag_choices
+                ).ask()
+                
+                selected_tag_gids = []
+                if selected_tag_names:
+                    for tag_name in selected_tag_names:
+                        if tag_name == "Create new tag":
+                            new_tag_name = questionary.text("New Tag Name:").ask()
+                            if new_tag_name:
+                                try:
+                                    new_tag = client.create_tag(workspace_gid, new_tag_name)
+                                    selected_tag_gids.append(new_tag['gid'])
+                                    # Update cache
+                                    cached_tags.append({'gid': new_tag['gid'], 'name': new_tag['name']})
+                                    db.cache_tags(cached_tags)
+                                except Exception as e:
+                                    console.print(f"[red]Failed to create tag '{new_tag_name}': {e}[/red]")
+                        else:
+                            # Find gid
+                            tag = next((t for t in cached_tags if t['name'] == tag_name), None)
+                            if tag:
+                                selected_tag_gids.append(tag['gid'])
+                return selected_tag_gids
+
             if action == "Search for an existing task":
                 query = questionary.text("Search query:").ask()
                 tasks = client.search_tasks(workspace_gid, query)
                 
                 if not tasks:
                     console.print("[yellow]No tasks found.[/yellow]")
-                    # Fallback to create? Or just exit? Let's just stop here if not found.
                 else:
                     task_choices = [
                         questionary.Choice(t['name'], value=t) for t in tasks
@@ -87,15 +127,38 @@ def checkout(
                     task_gid = selected_task['gid']
                     task_name = selected_task['name']
                     
+                    # Optional: Add tags to existing task
+                    if questionary.confirm("Add tags to this task?").ask():
+                        tag_gids = select_and_create_tags(client, workspace_gid, db)
+                        if tag_gids:
+                            console.print(f"Applying {len(tag_gids)} tags...")
+                            for tag_gid in tag_gids:
+                                try:
+                                    client.add_tag_to_task(task_gid, tag_gid)
+                                except Exception as e:
+                                    console.print(f"[red]Failed to add tag: {e}[/red]")
+                    
             elif action == "Create a new task":
                 task_name = questionary.text("Task Name:", default=branch_name).ask()
                 project_gid = config.get_default_project()
                 
-                # If no default project, maybe ask? For now assume config has it or we pass None
+                # Tag Selection
+                tag_gids = select_and_create_tags(client, workspace_gid, db)
+
+                # Create Task
                 new_task = client.create_task(workspace_gid, project_gid, task_name)
                 task_gid = new_task['gid']
                 task_name = new_task['name']
                 console.print(f"[green]Created task: {task_name}[/green]")
+                
+                # Apply Tags
+                if tag_gids:
+                    console.print(f"Applying {len(tag_gids)} tags...")
+                    for tag_gid in tag_gids:
+                        try:
+                            client.add_tag_to_task(task_gid, tag_gid)
+                        except Exception as e:
+                            console.print(f"[red]Failed to add tag: {e}[/red]")
 
         if task_gid:
             # Link it
