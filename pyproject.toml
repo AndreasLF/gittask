@@ -18,6 +18,7 @@ dependencies = [
 
 [project.scripts]
 gittask = "gittask.main:app"
+gt = "gittask.main:app"
 
 [build-system]
 requires = ["hatchling"]
