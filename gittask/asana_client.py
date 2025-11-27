@@ -78,7 +78,7 @@ class AsanaClient:
             time_str.append(f"{minutes}m")
             
         if not time_str:
-            time_str.append("< 1m")
+            time_str.append("&lt; 1m")
             
         text = f"⏱️ Worked {' '.join(time_str)} on branch <code>{branch_name}</code>."
         self.post_comment(task_gid, text)
