@@ -42,6 +42,13 @@ class ConfigManager:
         res = self.db.config.search(Query().key == 'default_workspace')
         return res[0]['value'] if res else None
 
+    def set_paid_plan_status(self, is_paid_plan: bool):
+        self.db.config.upsert({'key': 'is_workspace_paid_plan', 'value': is_paid_plan}, Query().key == 'is_workspace_paid_plan')
+
+    def get_paid_plan_status(self) -> Optional[bool]:
+        res = self.db.config.search(Query().key == 'is_workspace_paid_plan')
+        return res[0]['value'] if res else None
+
     def set_default_project(self, project_gid: str):
         from tinydb import Query
         self.db.config.upsert({'key': 'default_project', 'value': project_gid}, Query().key == 'default_project')

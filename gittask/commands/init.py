@@ -33,6 +33,14 @@ def init():
                 "Select your default Asana Workspace:",
                 choices=workspace_choices
             ).ask()
+
+
+            # ask user if paid plan
+            paid_plan = questionary.confirm(
+                "Is this Asana workspace on a paid plan?",
+                default=True
+            ).ask()
+            config.set_paid_plan_status(paid_plan)
             
             config.set_default_workspace(workspace_gid)
             
