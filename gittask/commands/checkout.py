@@ -143,7 +143,17 @@ def checkout(
                             console.print(f"Applying {len(tag_gids)} tags...")
                             for tag_gid in tag_gids:
                                 try:
-                                    client.add_tag_to_task(task_gid, tag_gid)
+                                    # Retry logic for tag addition as task creation might not be propagated yet
+                                    max_retries = 5
+                                    for attempt in range(max_retries):
+                                        try:
+                                            client.add_tag_to_task(task_gid, tag_gid)
+                                            break
+                                        except Exception as e:
+                                            if "404" in str(e) and attempt < max_retries - 1:
+                                                time.sleep(1 * (attempt + 1))  # Exponential backoff: 1s, 2s, 3s, 4s
+                                                continue
+                                            raise e
                                 except Exception as e:
                                     console.print(f"[red]Failed to add tag: {e}[/red]")
                     except Exception as e:
