@@ -79,11 +79,17 @@ def checkout(
             
             task_names = [t['name'] for t in project_tasks]
             from prompt_toolkit.completion import WordCompleter
+            from prompt_toolkit.history import InMemoryHistory
             completer = WordCompleter(task_names, ignore_case=True, match_middle=True)
+            
+            # Inject branch name into history so user can press Up to get it
+            history = InMemoryHistory()
+            history.append_string(branch_name)
             
             task_input = questionary.text(
                 "Select task (Type to search or enter new name):",
-                completer=completer
+                completer=completer,
+                history=history
             ).ask()
             
             if not task_input:
