@@ -53,6 +53,12 @@ class DBManager:
             'workspace_gid': workspace_gid
         }, (Branch.branch_name == branch_name) & (Branch.repo_path == repo_path))
 
+    def remove_branch_link(self, branch_name: str, repo_path: str):
+        Branch = Query()
+        self.branch_map.remove(
+            (Branch.branch_name == branch_name) & (Branch.repo_path == repo_path)
+        )
+
     # Time Session Operations
     def start_session(self, branch_name: str, repo_path: str, task_gid: str):
         # Enforce single active session: Stop ANY other active session first

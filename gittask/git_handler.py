@@ -33,3 +33,13 @@ class GitHandler:
             return self.repo.remote(remote_name).url
         except ValueError:
             return None
+
+    def push_branch(self, branch_name: str, remote_name: str = "origin"):
+        try:
+            remote = self.repo.remote(remote_name)
+            # Push and set upstream
+            remote.push(refspec=f"{branch_name}:{branch_name}", set_upstream=True)
+        except ValueError:
+             raise Exception(f"Remote '{remote_name}' not found")
+        except git.exc.GitCommandError as e:
+            raise Exception(f"Failed to push branch: {e}")
