@@ -104,6 +104,7 @@ def test_push_failure(mock_db, mock_git, mocker):
     mocker.patch("gittask.commands.push.git", mock_git)
     
     mock_subprocess = mocker.patch("gittask.commands.push.subprocess")
+    mock_subprocess.CalledProcessError = subprocess.CalledProcessError
     
     mock_git.get_current_branch.return_value = "main"
     
