@@ -23,13 +23,15 @@ def checkout(
     
     # 1. Stop current session
     current_branch = git.get_current_branch()
+    repo_path = git.get_repo_root()
     
     if current_branch == branch_name:
         console.print(f"[yellow]Already on branch {branch_name}[/yellow]")
         # We still want to ensure tracking is active, so we proceed to step 3
     else:
         if current_branch != "DETACHED_HEAD":
-            db.stop_current_session(current_branch)
+            # Just stop any active session to be safe/clean
+            db.stop_any_active_session()
             console.print(f"[yellow]Stopped tracking time for {current_branch}[/yellow]")
 
         # 2. Checkout new branch
@@ -41,7 +43,7 @@ def checkout(
             raise typer.Exit(code=1)
 
     # 3. Check if linked to Asana
-    task_info = db.get_task_for_branch(branch_name)
+    task_info = db.get_task_for_branch(branch_name, repo_path)
     
     if not task_info:
         # Skip linking for main/master
@@ -166,7 +168,8 @@ def checkout(
         if task_gid:
             # Link it
             db.link_branch_to_task(
-                branch_name, 
+                branch_name,
+                repo_path,
                 task_gid, 
                 task_name, 
                 project_gid=config.get_default_project() or "", 
@@ -177,21 +180,18 @@ def checkout(
     # 4. Start new session
     if task_info:
         # Check if we are already tracking this task
-        # We can check if there's an open session for this branch
-        # Actually, we stopped the session in step 1 if we switched branches.
-        # But if we were "Already on branch", we didn't stop it.
-        
-        # Let's check if there is an open session for this branch
         from tinydb import Query
         Session = Query()
         open_sessions = db.time_sessions.search(
-            (Session.branch == branch_name) & (Session.end_time == None)
+            (Session.branch == branch_name) & 
+            (Session.repo_path == repo_path) & 
+            (Session.end_time == None)
         )
         
         if open_sessions:
              console.print(f"[yellow]Already tracking time for '{branch_name}'[/yellow]")
         else:
-            db.start_session(branch_name, task_info['asana_task_gid'])
+            db.start_session(branch_name, repo_path, task_info['asana_task_gid'])
             console.print(f"[bold green]Started tracking time for '{branch_name}' -> '{task_info['asana_task_name']}'[/bold green]")
             
     else:

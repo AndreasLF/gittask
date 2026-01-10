@@ -1,5 +1,5 @@
 import typer
-from .commands import auth, init, checkout, status, sync, commit, push, pr, finish, tags, session
+from .commands import auth, init, checkout, status, sync, commit, push, pr, finish, tags, session, track
 
 app = typer.Typer(
     name="gittask",
@@ -19,6 +19,7 @@ app.command(name="finish")(finish.finish)
 app.add_typer(tags.app, name="tags", help="Tag commands")
 app.command(name="stop", help="Stop time tracking")(session.stop)
 app.command(name="start", help="Start time tracking")(session.start)
+app.command(name="track", help="Track time on a global task")(track.track)
 
 @app.callback()
 def main(ctx: typer.Context):

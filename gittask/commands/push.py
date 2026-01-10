@@ -83,7 +83,8 @@ def push(
 
     # 3. Post to Asana
     if commits:
-        task_info = db.get_task_for_branch(current_branch)
+        repo_path = git.get_repo_root()
+        task_info = db.get_task_for_branch(current_branch, repo_path)
         if task_info:
             token = config.get_api_token()
             if not token:

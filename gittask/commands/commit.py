@@ -19,7 +19,8 @@ def commit(
     Commit changes and post the message to the linked Asana task.
     """
     current_branch = git.get_current_branch()
-    task_info = db.get_task_for_branch(current_branch)
+    repo_path = git.get_repo_root()
+    task_info = db.get_task_for_branch(current_branch, repo_path)
     
     # 1. Perform the git commit
     cmd = ["git", "commit", "-m", message]

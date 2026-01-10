@@ -20,7 +20,8 @@ def finish():
     Complete the current task: Stop timer, Merge PR, Close Asana Task, Cleanup.
     """
     current_branch = git.get_current_branch()
-    task_info = db.get_task_for_branch(current_branch)
+    repo_path = git.get_repo_root()
+    task_info = db.get_task_for_branch(current_branch, repo_path)
     
     if not task_info:
         console.print("[yellow]Current branch is not linked to an Asana task.[/yellow]")
@@ -29,7 +30,7 @@ def finish():
 
     # 1. Stop Timer
     console.print("⏱️  Stopping timer...")
-    session = db.stop_current_session(current_branch)
+    session = db.stop_current_session(current_branch, repo_path)
     if session:
         console.print(f"[green]Stopped session ({int(session['duration_seconds'] // 60)}m).[/green]")
     else:

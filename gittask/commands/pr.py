@@ -64,7 +64,8 @@ def create(
     Push current branch and create a Pull Request linked to the Asana task.
     """
     current_branch = git.get_current_branch()
-    task_info = db.get_task_for_branch(current_branch)
+    repo_path = git.get_repo_root()
+    task_info = db.get_task_for_branch(current_branch, repo_path)
     
     if not task_info:
         console.print("[yellow]Branch not linked to Asana task. Using branch name as title.[/yellow]")
