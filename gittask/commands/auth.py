@@ -8,7 +8,7 @@ console = Console()
 
 @app.command()
 def login(
-    token: str = typer.Option(None, prompt=True, hide_input=True, help="Asana Personal Access Token"),
+    token: str = typer.Option(None, help="Asana Personal Access Token"),
     github: bool = typer.Option(False, "--github", help="Login with GitHub Token")
 ):
     """
@@ -20,6 +20,8 @@ def login(
         config.set_github_token(github_token)
         console.print("[green]Successfully logged in to GitHub![/green]")
     else:
+        if not token:
+            token = typer.prompt("Asana Personal Access Token", hide_input=True)
         config.set_api_token(token)
         console.print("[green]Successfully logged in to Asana![/green]")
 

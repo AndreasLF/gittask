@@ -34,11 +34,6 @@ def commit(
         # Git commit failed (e.g., nothing to commit)
         raise typer.Exit(code=1)
         
-    try:
-        subprocess.run(cmd, check=True)
-        console.print("[green]Commit successful.[/green]")
-    except subprocess.CalledProcessError:
-        # Git commit failed (e.g., nothing to commit)
-        raise typer.Exit(code=1)
+
         
     # Asana posting moved to 'push' command
