@@ -131,6 +131,10 @@ class Dashboard(Screen):
         else:
             self.notify("Could not identify task to remove", severity="error")
 
+    def on_task_card_push_requested(self, message: TaskCard.PushRequested) -> None:
+        self.notify(f"Pushing {message.branch}...")
+        self.run_worker(self.perform_push(message.branch))
+
     async def perform_checkout(self, branch: str) -> None:
         import sys
         import subprocess
@@ -165,6 +169,32 @@ class Dashboard(Screen):
                 
         except Exception as e:
             self.notify(f"Checkout failed: {e}", severity="error")
+
+    async def perform_push(self, branch: str) -> None:
+        import sys
+        import asyncio
+        from .log_view import LogScreen
+        
+        # Run gt push command
+        cmd = [sys.executable, "-m", "gittask.main", "push"]
+        
+        try:
+            process = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            stdout, stderr = await process.communicate()
+            
+            output = stdout.decode() + stderr.decode()
+            
+            if process.returncode == 0:
+                self.notify(f"Successfully pushed {branch}")
+            else:
+                self.app.push_screen(LogScreen("Push Failed", output))
+                
+        except Exception as e:
+            self.notify(f"Push failed: {e}", severity="error")
         
     async def perform_sync(self) -> None:
         import sys

@@ -118,12 +118,8 @@ class TaskCard(Static):
             self.post_message(self.CheckoutRequested(self.branch_name))
 
         elif button_id == "push-btn":
-            from ...git_handler import GitHandler
-            try:
-                GitHandler().push_branch(self.branch_name)
-                self.notify(f"Successfully pushed {self.branch_name}", title="Push Success", severity="information")
-            except Exception as e:
-                self.notify(f"Failed to push: {e}", title="Push Error", severity="error")
+            # Use gt push CLI command to include Asana commenting
+            self.post_message(self.PushRequested(self.branch_name))
 
         elif button_id == "trash-btn":
             self.post_message(self.TaskRemovalRequested(self.task_data))
@@ -142,4 +138,10 @@ class TaskCard(Static):
         """Sent when task removal is requested."""
         def __init__(self, task_data: dict):
             self.task_data = task_data
+            super().__init__()
+
+    class PushRequested(Message):
+        """Sent when push is requested."""
+        def __init__(self, branch: str):
+            self.branch = branch
             super().__init__()
