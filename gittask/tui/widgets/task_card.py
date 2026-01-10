@@ -72,7 +72,22 @@ class TaskCard(Static):
             # Start session
             # If another session is active, stop it first (DBManager handles this usually or we should)
             db.stop_any_active_session()
-            db.start_session(self.branch_name, "LOCAL" if not self.branch_name.startswith("@global:") else "GLOBAL", self.task_gid)
+            
+            repo_path = self.task_data.get('repo_path')
+            if not repo_path:
+                # Fallback if not in task_data (shouldn't happen for branch tasks)
+                if self.branch_name.startswith("@global:"):
+                    repo_path = "GLOBAL"
+                else:
+                    from ...git_handler import GitHandler
+                    import os
+                    try:
+                        repo_path = GitHandler().get_repo_root()
+                    except:
+                        # Fallback to current working directory if git fails
+                        repo_path = os.getcwd()
+
+            db.start_session(self.branch_name, repo_path, self.task_gid)
             self.is_active = True
             self.start_time = time.time()
             self.add_class("active")

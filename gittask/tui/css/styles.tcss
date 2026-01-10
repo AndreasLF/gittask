@@ -165,3 +165,37 @@ RichLog {
     background: $surface-darken-1;
     margin-bottom: 1;
 }
+
+/* Options Modal */
+.options-modal {
+    width: 60;
+    height: auto;
+    border: solid $primary;
+    background: $surface;
+    padding: 1 2;
+    align: center middle;
+}
+
+.modal-header {
+    text-align: center;
+    text-style: bold;
+    margin-bottom: 1;
+    color: $accent;
+}
+
+.hidden {
+    display: none;
+}
+
+#select-mode Button {
+    width: 100%;
+    margin-bottom: 1;
+}
+
+#input-mode {
+    height: auto;
+}
+
+#branch-input {
+    margin: 1 0;
+}
