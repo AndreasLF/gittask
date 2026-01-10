@@ -16,6 +16,12 @@ dependencies = [
     "PyGithub",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-mock",
+]
+
 [project.scripts]
 gittask = "gittask.main:app"
 gt = "gittask.main:app"
