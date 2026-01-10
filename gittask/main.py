@@ -21,6 +21,12 @@ app.command(name="stop", help="Stop time tracking")(session.stop)
 app.command(name="start", help="Start time tracking")(session.start)
 app.command(name="track", help="Track time on a global task")(track.track)
 
+@app.command(name="gui", help="Launch the Graphical User Interface (TUI)")
+def gui():
+    from .tui.app import GitTaskApp
+    app = GitTaskApp()
+    app.run()
+
 @app.callback()
 def main(ctx: typer.Context):
     """

@@ -1,0 +1,167 @@
+Screen {
+    layout: vertical;
+}
+
+Header {
+    dock: top;
+}
+
+Footer {
+    dock: bottom;
+}
+
+/* Dashboard Layout */
+.dashboard-container {
+    layout: vertical;
+    height: 100%;
+}
+
+.task-grid {
+    layout: grid;
+    grid-size: 3;
+    grid-gutter: 1;
+    padding: 1;
+    height: 1fr;
+    overflow-y: auto;
+}
+
+.bottom-bar {
+    dock: bottom;
+    height: auto;
+    border-top: solid $secondary;
+    padding: 1;
+    layout: horizontal;
+    align: center middle;
+}
+
+/* Task Card Styles */
+TaskCard {
+    height: 14;
+    border: solid $primary-muted;
+    padding: 1;
+    background: $surface;
+    layout: vertical;
+}
+
+TaskCard.active {
+    border: solid $success;
+    background: $surface-lighten-1;
+}
+
+.task-name {
+    text-align: center;
+    text-style: bold;
+    height: 3;
+    width: 100%;
+}
+
+.branch-name {
+    text-align: center;
+    color: $text-muted;
+    height: 1;
+    width: 100%;
+}
+
+.timer {
+    text-align: center;
+    text-style: bold;
+    color: $warning;
+    height: 3;
+    content-align: center middle;
+    width: 100%;
+    text-opacity: 0%; /* Hidden by default if not active? Or just 00:00:00 */
+}
+
+TaskCard.active .timer {
+    text-opacity: 100%;
+}
+
+.card-actions {
+    align: center bottom;
+    height: auto;
+    dock: bottom;
+}
+
+TaskCard Button {
+    min-width: 10;
+    margin: 0 1;
+}
+
+/* General Buttons */
+Button {
+    margin: 0 1;
+}
+
+/* Status Screen Styles */
+.screen-container {
+    layout: vertical;
+    height: 100%;
+}
+
+.page-title {
+    dock: top;
+    width: 100%;
+    text-align: center;
+    background: $primary;
+    color: $text;
+    padding: 1;
+    text-style: bold;
+}
+
+.content-scroll {
+    height: 1fr;
+    padding: 1 2;
+}
+
+.status-section {
+    margin-bottom: 2;
+    height: auto;
+}
+
+.section-title {
+    color: $secondary;
+    text-style: bold;
+    margin-bottom: 1;
+}
+
+.status-card {
+    border: solid $primary-muted;
+    padding: 1 2;
+    background: $surface;
+    height: auto;
+}
+
+.status-card.active {
+    border: solid $success;
+    background: $surface-lighten-1;
+}
+
+DataTable {
+    height: auto;
+    max-height: 20;
+    border: solid $primary-muted;
+}
+
+/* Log Screen */
+.log-modal {
+    width: 80%;
+    height: 80%;
+    border: solid $error;
+    background: $surface;
+    padding: 1;
+    align: center middle;
+}
+
+.log-title {
+    text-align: center;
+    text-style: bold;
+    color: $error;
+    margin-bottom: 1;
+}
+
+RichLog {
+    height: 1fr;
+    border: solid $secondary;
+    background: $surface-darken-1;
+    margin-bottom: 1;
+}
