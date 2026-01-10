@@ -28,6 +28,9 @@ class Dashboard(Screen):
     def on_mount(self) -> None:
         self.refresh_tasks()
 
+    def on_screen_resume(self) -> None:
+        self.refresh_tasks()
+
     def refresh_tasks(self) -> None:
         grid = self.query_one("#task-grid")
         grid.remove_children()

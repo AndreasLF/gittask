@@ -40,7 +40,9 @@ class TaskSearch(Screen):
                 list_view.clear()
                 
                 for task in tasks:
-                    list_view.append(ListItem(Label(task['name']), name=task['gid']))
+                    item = ListItem(Label(task['name']), name=task['gid'])
+                    item.task_name = task['name']
+                    list_view.append(item)
                     
         except Exception as e:
             self.notify(f"Search failed: {e}", severity="error")
@@ -53,9 +55,8 @@ class TaskSearch(Screen):
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         task_gid = event.item.name
-        # Get text from the Label widget
-        label = event.item.query_one(Label)
-        task_name = str(label.renderable)
+        task_gid = event.item.name
+        task_name = getattr(event.item, 'task_name', 'Unknown Task')
         
         from .task_options import TaskOptionsModal
         self.app.push_screen(TaskOptionsModal(task_name, task_gid), self.handle_options)

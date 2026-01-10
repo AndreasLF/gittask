@@ -45,6 +45,8 @@ class TaskCard(Static):
                 # Only show checkout if not already on this branch
                 if self.branch_name != self.current_branch:
                     yield Button("Checkout", variant="primary", id="checkout-btn")
+                else:
+                    yield Button("Push", variant="default", id="push-btn")
 
     def on_mount(self) -> None:
         self.set_interval(1, self.update_timer)
@@ -113,6 +115,14 @@ class TaskCard(Static):
             # But importing commands might be circular or heavy.
             # Let's post a message to App/Dashboard to handle checkout
             self.post_message(self.CheckoutRequested(self.branch_name))
+
+        elif button_id == "push-btn":
+            from ...git_handler import GitHandler
+            try:
+                GitHandler().push_branch(self.branch_name)
+                self.notify(f"Successfully pushed {self.branch_name}", title="Push Success", severity="information")
+            except Exception as e:
+                self.notify(f"Failed to push: {e}", title="Push Error", severity="error")
 
     class StatusChanged(Message):
         """Sent when task status changes (start/stop)."""

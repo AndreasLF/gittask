@@ -24,6 +24,21 @@ app.command(name="track", help="Track time on a global task")(track.track)
 @app.command(name="gui", help="Launch the Graphical User Interface (TUI)")
 def gui():
     from .tui.app import GitTaskApp
+    from .config import ConfigManager
+    from .asana_client import AsanaClient
+    
+    # Warm up AsanaClient to initialize multiprocessing pool before Textual starts
+    # This prevents "bad value(s) in fds_to_keep" error on macOS
+    try:
+        config = ConfigManager()
+        token = config.get_api_token()
+        if token:
+            client = AsanaClient(token)
+            client.close()
+    except Exception:
+        # Ignore errors here, let the app handle them or fail later
+        pass
+
     app = GitTaskApp()
     app.run()
 
