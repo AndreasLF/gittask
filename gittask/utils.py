@@ -4,6 +4,19 @@ from typing import List, Dict
 
 console = Console()
 
+def get_git_root() -> str:
+    """
+    Find the root directory of the git repository.
+    Returns the absolute path to the git root.
+    """
+    import git
+    try:
+        repo = git.Repo(search_parent_directories=True)
+        return repo.working_tree_dir
+    except git.InvalidGitRepositoryError:
+        # Fallback to current directory if not in a git repo (though this app relies on git)
+        return "."
+
 def select_and_create_tags(client, workspace_gid: str, db) -> List[str]:
     """
     Interactive prompt to select existing tags or create new ones.

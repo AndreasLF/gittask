@@ -3,9 +3,15 @@ import os
 from typing import Optional, Dict, List
 import time
 import uuid
+from .utils import get_git_root
 
 class DBManager:
     def __init__(self, db_path: str = "db.json"):
+        if db_path == "db.json":
+            # Resolve absolute path relative to git root
+            git_root = get_git_root()
+            db_path = os.path.join(git_root, db_path)
+            
         self.db = TinyDB(db_path)
         self.branch_map = self.db.table('branch_map')
         self.time_sessions = self.db.table('time_sessions')
