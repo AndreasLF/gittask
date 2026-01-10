@@ -116,11 +116,55 @@ class TaskSearch(Screen):
         self.query_one("#loading").display = False
         self.query_one("#results-list").display = True
         
-        task_gid = task['gid']
-        task_name = task['name']
+        # Store task info for later use in handle_tags
+        self.created_task = task
+        
+        # Open Tag Selection
+        config = ConfigManager()
+        workspace_gid = config.get_default_workspace()
+        
+        from .tag_selection import TagSelectionModal
+        self.app.push_screen(TagSelectionModal(workspace_gid), self.handle_tags)
+
+    def handle_tags(self, tag_gids: list) -> None:
+        if tag_gids:
+            self.notify(f"Applying {len(tag_gids)} tags...")
+            self._add_tags_worker(self.created_task['gid'], tag_gids)
+        
+        # Proceed to options
+        task_gid = self.created_task['gid']
+        task_name = self.created_task['name']
         
         from .task_options import TaskOptionsModal
         self.app.push_screen(TaskOptionsModal(task_name, task_gid), self.handle_options)
+
+    @work(exclusive=False, thread=True)
+    def _add_tags_worker(self, task_gid: str, tag_gids: list) -> None:
+        try:
+            config = ConfigManager()
+            token = config.get_api_token()
+            
+            with AsanaClient(token) as client:
+                for tag_gid in tag_gids:
+                    # Retry logic similar to CLI
+                    max_retries = 5
+                    for attempt in range(max_retries):
+                        try:
+                            client.add_tag_to_task(task_gid, tag_gid)
+                            break
+                        except Exception as e:
+                            if "404" in str(e) and attempt < max_retries - 1:
+                                import time
+                                time.sleep(1 * (attempt + 1))
+                                continue
+                            # If failed after retries or other error, log/notify
+                            self.app.call_from_thread(self.notify, f"Failed to add tag: {e}", severity="error")
+                            break
+                            
+            self.app.call_from_thread(self.notify, "Tags applied successfully")
+            
+        except Exception as e:
+            self.app.call_from_thread(self.notify, f"Error applying tags: {e}", severity="error")
 
     def handle_options(self, result: dict) -> None:
         if not result:
