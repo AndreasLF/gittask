@@ -62,6 +62,7 @@ gittask init
 | Command | Description |
 | :--- | :--- |
 | `gt checkout -b <branch>` | **Start here.** Creates a branch, links/creates an Asana task, and starts the timer. |
+| `gt track` | Track time on an Asana task without linking to a branch (e.g., meetings, code reviews). |
 | `gt status` | Shows current branch, task, and session duration. |
 | `gt finish` | **The magic command.** Stops timer, syncs time, merges PR, closes task, and deletes branch. |
 
@@ -88,6 +89,12 @@ gittask init
 | :--- | :--- |
 | `gt tags add` | Add tags to the current task. |
 | `gt tags list` | View tags on the current task. |
+
+### 🖥️ GUI (Experimental)
+
+| Command | Description |
+| :--- | :--- |
+| `gt gui` | Launch the terminal-based graphical interface for visual task management. |
 
 ---
 *Happy Coding!* 🚀
